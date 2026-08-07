@@ -26,6 +26,8 @@ export default async function HistoryPage() {
             <th className="p-2 text-left">Bombero</th>
             <th className="p-2 text-left">Enviada</th>
             <th className="p-2 text-left">Estado</th>
+            <th className="p-2 text-left">Validado por</th>
+            <th className="p-2 text-left">Validado el</th>
             <th className="p-2 text-left">Puntos</th>
             <th className="p-2 text-left">Observaciones / Motivo</th>
           </tr>
@@ -41,6 +43,8 @@ export default async function HistoryPage() {
                 </td>
                 <td className="p-2 font-mono">{new Date(s.submitted_at).toLocaleString("es-AR")}</td>
                 <td className="p-2">{v ? (v.decision === "aprobada" ? "Aprobada" : "Rechazada") : "En revisión"}</td>
+                <td className="p-2">{v?.profiles?.full_name || "—"}</td>
+                <td className="p-2 font-mono">{v ? new Date(v.validated_at).toLocaleString("es-AR") : "—"}</td>
                 <td className="p-2 font-mono">{v?.points_awarded ?? "—"}</td>
                 <td className="p-2">{v?.decision === "rechazada" ? v.rejection_reason : s.observations || "—"}</td>
               </tr>
