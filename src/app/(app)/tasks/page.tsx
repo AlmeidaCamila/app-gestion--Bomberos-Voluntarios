@@ -21,8 +21,12 @@ export default async function TasksPage() {
     supabase
       .from("tasks")
       .select(
-        "id, name, description, unit, unit_id, requires_inventory_review, type, frequency_days, due_date, active, subsection_id, assigned_bombero_id, priority_id, priorities(name,code), task_statuses(name,code), subsections(name, sections(name))"
+        "id, name, description, unit, unit_id, requires_inventory_review, type, frequency_days, due_date, active, subsection_id, assigned_bombero_id, priority_id, priorities(name,code), task_statuses!inner(name,code), subsections(name, sections(name))"
       )
+      // Las tareas únicas que ya se validaron quedan en 'finalizada' y salen
+      // de la gestión activa (siguen visibles en Historial). Las cíclicas
+      // nunca llegan a 'finalizada': al aprobarse vuelven a 'pendiente'.
+      .neq("task_statuses.code", "finalizada")
       .order("created_at", { ascending: false }),
     supabase
       .from("profiles")
