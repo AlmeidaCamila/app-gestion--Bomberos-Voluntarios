@@ -22,15 +22,21 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-charcoal p-5">
       <div className="relative w-full max-w-sm rounded-lg bg-paper p-8 shadow-2xl">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-brand text-white">
-          🔥
+        <div className="mb-7 text-center">
+          <div className="mb-2 text-3xl">🧑‍🚒</div>
+          <h1 className="font-display text-2xl uppercase tracking-wide text-charcoal">
+            Tablón de Guardia
+          </h1>
+          <p className="mt-1 font-mono text-xs text-steel">Gestión de tareas internas</p>
+          <p className="mt-3 font-mono text-xs leading-relaxed text-steel">
+            Cuartel Nº142
+            <br />
+            Sierra de los Padres
+          </p>
+          <p className="mt-3 font-mono text-[10.5px] italic text-steelLight">
+            Cada tarea cuenta. Cada bombero importa.
+          </p>
         </div>
-        <h1 className="font-display text-2xl uppercase tracking-wide text-charcoal">
-          Tablón de Guardia
-        </h1>
-        <p className="font-mono text-xs text-steel">gestión interna</p>
-        <p className="font-mono text-xs text-steel">Cuartel Nº142</p>
-        <p className="mb-6 font-mono text-xs text-steel">Sierra de los Padres</p>
 
         {state?.error && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-brand-dark">

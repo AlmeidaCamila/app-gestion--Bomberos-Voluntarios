@@ -59,12 +59,12 @@ export function Sidebar({
       >
         <div className="border-b border-white/10 px-5 py-5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand text-white">
-              🔥
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand text-base text-white">
+              🧑‍🚒
             </div>
             <div>
               <h1 className="font-display text-base uppercase text-white">Tablón de Guardia</h1>
-              <div className="font-mono text-[10px] text-steelLight">gestión interna</div>
+              <div className="font-mono text-[10px] text-steelLight">Gestión de tareas internas</div>
               <div className="font-mono text-[10px] text-steelLight">Cuartel Nº142</div>
               <div className="font-mono text-[10px] text-steelLight">Sierra de los Padres</div>
             </div>
