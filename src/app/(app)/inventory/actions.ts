@@ -12,15 +12,21 @@ import { PANOL_UNIT_NAME } from "@/lib/constants";
  * ("crash al crear unidades" que reportaron).
  */
 
-// ---------- Catálogo de elementos (Administrador, Encargado de Área y Subencargado; es global) ----------
-const CATALOG_MANAGER_ROLES = ["admin", "encargado_seccion", "encargado_subseccion"];
+// ---------- Inventario: Administrador, Encargado de Área y Subencargado.
+// Los bomberos solo pueden ver (acá y en RLS: can_manage_inventory() /
+// items_write no los incluye). ----------
+const INVENTORY_MANAGER_ROLES = ["admin", "encargado_seccion", "encargado_subseccion"];
+
+async function assertCanManageInventory() {
+  const profile = await getCurrentProfile();
+  if (!profile || !INVENTORY_MANAGER_ROLES.includes(profile.role_code)) {
+    throw new Error("No tenés permiso para modificar el inventario.");
+  }
+}
 
 export async function createInventoryItemAction(formData: FormData) {
   try {
-    const profile = await getCurrentProfile();
-    if (!profile || !CATALOG_MANAGER_ROLES.includes(profile.role_code)) {
-      return { error: "No tenés permiso para editar el catálogo." };
-    }
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const name = String(formData.get("name") || "").trim();
     const category = String(formData.get("category") || "").trim();
@@ -36,10 +42,7 @@ export async function createInventoryItemAction(formData: FormData) {
 
 export async function deleteInventoryItemAction(id: string) {
   try {
-    const profile = await getCurrentProfile();
-    if (!profile || !CATALOG_MANAGER_ROLES.includes(profile.role_code)) {
-      return { error: "No tenés permiso para editar el catálogo." };
-    }
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const { error } = await supabase.from("inventory_items").delete().eq("id", id);
     if (error) return { error: error.message };
@@ -50,9 +53,10 @@ export async function deleteInventoryItemAction(id: string) {
   }
 }
 
-// ---------- Unidades (Encargado de Área / Subencargado de esa sección + admin, vía RLS) ----------
+// ---------- Unidades (Encargado de Área / Subencargado de esa sección + admin) ----------
 export async function createUnitAction(formData: FormData) {
   try {
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const name = String(formData.get("name") || "").trim();
     const section_id = String(formData.get("section_id") || "");
@@ -80,6 +84,7 @@ export async function createUnitAction(formData: FormData) {
  * elementos que no pertenecen a ningún vehículo/puesto en particular. */
 export async function ensurePanolUnitAction(sectionId: string) {
   try {
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const { data: existing } = await supabase
       .from("units")
@@ -104,6 +109,7 @@ export async function ensurePanolUnitAction(sectionId: string) {
 
 export async function deleteUnitAction(id: string) {
   try {
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const { error } = await supabase.from("units").delete().eq("id", id);
     if (error) return { error: error.message };
@@ -117,6 +123,7 @@ export async function deleteUnitAction(id: string) {
 // ---------- Inventario de una unidad: asignar elemento + cantidad ----------
 export async function addUnitInventoryAction(unitId: string, formData: FormData) {
   try {
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const item_id = String(formData.get("item_id") || "");
     const quantity = Number(formData.get("quantity") || 1);
@@ -135,6 +142,7 @@ export async function addUnitInventoryAction(unitId: string, formData: FormData)
 
 export async function updateUnitInventoryQuantityAction(id: string, quantity: number) {
   try {
+    await assertCanManageInventory();
     if (!Number.isFinite(quantity) || quantity < 1) return { error: "La cantidad tiene que ser mayor a 0." };
     const supabase = createServerSupabase();
     const { error } = await supabase.from("unit_inventory").update({ quantity }).eq("id", id);
@@ -148,6 +156,7 @@ export async function updateUnitInventoryQuantityAction(id: string, quantity: nu
 
 export async function removeUnitInventoryAction(id: string) {
   try {
+    await assertCanManageInventory();
     const supabase = createServerSupabase();
     const { error } = await supabase.from("unit_inventory").delete().eq("id", id);
     if (error) return { error: error.message };

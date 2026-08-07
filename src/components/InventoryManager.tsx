@@ -19,13 +19,13 @@ interface InvRow { id: string; unit_id: string; item_id: string; quantity: numbe
 interface SectionLite { id: string; name: string; }
 
 export function InventoryManager({
-  canManageCatalog,
+  canManage,
   units,
   items,
   unitInventory,
   sections,
 }: {
-  canManageCatalog: boolean;
+  canManage: boolean;
   units: UnitRow[];
   items: Item[];
   unitInventory: InvRow[];
@@ -67,8 +67,6 @@ export function InventoryManager({
 
   return (
     <div className="space-y-5">
-      {canManageCatalog && <CatalogPanel items={items} onRun={run} pending={pending} />}
-
       {/* Barra de filtros */}
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1 sm:max-w-xs">
@@ -93,26 +91,30 @@ export function InventoryManager({
           ))}
         </select>
 
-        <NewUnitForm sections={sections} onCreated={() => showToast("Unidad creada.")} />
+        {canManage && <NewUnitForm sections={sections} onCreated={() => showToast("Unidad creada.")} />}
       </div>
 
+      {canManage && <CatalogPanel items={items} onRun={run} pending={pending} />}
+
       {/* Acceso rápido a Pañol/Otros por sección */}
-      <div className="flex flex-wrap gap-2">
-        {sections.map((s) => {
-          const has = units.some((u) => u.section_id === s.id && u.name === "Pañol / Otros");
-          if (has) return null;
-          return (
-            <button
-              key={s.id}
-              onClick={() => createPanol(s.id)}
-              disabled={pending}
-              className="flex items-center gap-1.5 rounded-md border border-dashed border-line px-2.5 py-1.5 text-[11px] text-steel hover:border-brand hover:text-brand"
-            >
-              <Warehouse className="h-3 w-3" /> Crear &quot;Pañol / Otros&quot; en {s.name}
-            </button>
-          );
-        })}
-      </div>
+      {canManage && (
+        <div className="flex flex-wrap gap-2">
+          {sections.map((s) => {
+            const has = units.some((u) => u.section_id === s.id && u.name === "Pañol / Otros");
+            if (has) return null;
+            return (
+              <button
+                key={s.id}
+                onClick={() => createPanol(s.id)}
+                disabled={pending}
+                className="flex items-center gap-1.5 rounded-md border border-dashed border-line px-2.5 py-1.5 text-[11px] text-steel hover:border-brand hover:text-brand"
+              >
+                <Warehouse className="h-3 w-3" /> Crear &quot;Pañol / Otros&quot; en {s.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Lista compacta de unidades */}
       <div className="space-y-2.5">
@@ -122,7 +124,14 @@ export function InventoryManager({
           </div>
         )}
         {filteredUnits.map((u) => (
-          <UnitRowItem key={u.id} unit={u} items={items} rows={unitInventory.filter((r) => r.unit_id === u.id)} onRun={run} />
+          <UnitRowItem
+            key={u.id}
+            unit={u}
+            items={items}
+            rows={unitInventory.filter((r) => r.unit_id === u.id)}
+            onRun={run}
+            canManage={canManage}
+          />
         ))}
       </div>
     </div>
@@ -139,6 +148,14 @@ function CatalogPanel({
   pending: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter((it) => it.name.toLowerCase().includes(q) || it.category?.toLowerCase().includes(q));
+  }, [items, search]);
+
   return (
     <div className="rounded-lg border border-line bg-white">
       <button
@@ -152,11 +169,38 @@ function CatalogPanel({
       </button>
       {open && (
         <div className="border-t border-line p-4">
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {items.map((it) => (
-              <span key={it.id} className="flex items-center gap-1.5 rounded bg-paper2 px-2.5 py-1 text-xs">
-                {it.name}
-                {it.category && <span className="text-steel">· {it.category}</span>}
+          <form
+            action={(fd) => onRun(createInventoryItemAction(fd), "Elemento agregado al catálogo.")}
+            className="mb-3 flex flex-wrap gap-2"
+          >
+            <input name="name" placeholder="Nombre (ej: Manguera 45 mm)" required className="rounded border border-line px-2 py-1.5 text-xs" />
+            <input name="category" placeholder="Categoría (opcional)" className="rounded border border-line px-2 py-1.5 text-xs" />
+            <button className="rounded border border-line px-3 py-1.5 text-xs">Agregar</button>
+          </form>
+
+          <div className="relative mb-2">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-steel" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar en el catálogo..."
+              className="w-full rounded border border-line py-1.5 pl-8 pr-3 text-xs"
+            />
+          </div>
+
+          <div className="max-h-64 overflow-y-auto rounded border border-line">
+            {!filtered.length && (
+              <div className="px-3 py-4 text-center text-xs text-steel">No hay elementos que coincidan.</div>
+            )}
+            {filtered.map((it) => (
+              <div
+                key={it.id}
+                className="flex items-center justify-between border-b border-line px-3 py-1.5 text-xs last:border-0"
+              >
+                <span>
+                  {it.name}
+                  {it.category && <span className="ml-1.5 text-steel">· {it.category}</span>}
+                </span>
                 <button
                   disabled={pending}
                   onClick={() => onRun(deleteInventoryItemAction(it.id), "Elemento eliminado del catálogo.")}
@@ -164,17 +208,9 @@ function CatalogPanel({
                 >
                   ✕
                 </button>
-              </span>
+              </div>
             ))}
           </div>
-          <form
-            action={(fd) => onRun(createInventoryItemAction(fd), "Elemento agregado al catálogo.")}
-            className="flex flex-wrap gap-2"
-          >
-            <input name="name" placeholder="Nombre (ej: Manguera 45 mm)" required className="rounded border border-line px-2 py-1.5 text-xs" />
-            <input name="category" placeholder="Categoría (opcional)" className="rounded border border-line px-2 py-1.5 text-xs" />
-            <button className="rounded border border-line px-3 py-1.5 text-xs">Agregar</button>
-          </form>
         </div>
       )}
     </div>
@@ -238,11 +274,13 @@ function UnitRowItem({
   items,
   rows,
   onRun,
+  canManage,
 }: {
   unit: UnitRow;
   items: Item[];
   rows: InvRow[];
   onRun: (p: Promise<{ error: string | null }>, msg: string) => void;
+  canManage: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -255,15 +293,17 @@ function UnitRowItem({
           <span className="font-mono text-[10px] text-steel">· {rows.length} elemento(s)</span>
         </div>
         <div className="flex items-center gap-3">
-          <span
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm(`¿Eliminar la unidad "${unit.name}"?`)) onRun(deleteUnitAction(unit.id), "Unidad eliminada.");
-            }}
-            className="text-steel hover:text-brand"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </span>
+          {canManage && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(`¿Eliminar la unidad "${unit.name}"?`)) onRun(deleteUnitAction(unit.id), "Unidad eliminada.");
+              }}
+              className="text-steel hover:text-brand"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </span>
+          )}
           <span className="text-steel">{expanded ? "−" : "+"}</span>
         </div>
       </button>
@@ -275,29 +315,33 @@ function UnitRowItem({
               return (
                 <span key={r.id} className="flex items-center gap-1.5 rounded bg-paper2 px-2.5 py-1 text-xs">
                   {r.quantity}× {item?.name || "—"}
-                  <button onClick={() => onRun(removeUnitInventoryAction(r.id), "Elemento quitado de la unidad.")} className="text-steel hover:text-brand">
-                    ✕
-                  </button>
+                  {canManage && (
+                    <button onClick={() => onRun(removeUnitInventoryAction(r.id), "Elemento quitado de la unidad.")} className="text-steel hover:text-brand">
+                      ✕
+                    </button>
+                  )}
                 </span>
               );
             })}
             {!rows.length && <span className="text-xs text-steel">Sin elementos cargados todavía.</span>}
           </div>
-          <form
-            action={(fd) => onRun(addUnitInventoryAction(unit.id, fd), "Elemento agregado a la unidad.")}
-            className="flex flex-wrap gap-2"
-          >
-            <select name="item_id" required className="rounded border border-line px-2 py-1 text-[11px]">
-              <option value="">Elemento...</option>
-              {items.map((i) => (
-                <option key={i.id} value={i.id}>
-                  {i.name}
-                </option>
-              ))}
-            </select>
-            <input name="quantity" type="number" min={1} defaultValue={1} className="w-16 rounded border border-line px-2 py-1 text-[11px]" />
-            <button className="rounded border border-line px-2 py-1 text-[11px]">Agregar a la unidad</button>
-          </form>
+          {canManage && (
+            <form
+              action={(fd) => onRun(addUnitInventoryAction(unit.id, fd), "Elemento agregado a la unidad.")}
+              className="flex flex-wrap gap-2"
+            >
+              <select name="item_id" required className="rounded border border-line px-2 py-1 text-[11px]">
+                <option value="">Elemento...</option>
+                {items.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.name}
+                  </option>
+                ))}
+              </select>
+              <input name="quantity" type="number" min={1} defaultValue={1} className="w-16 rounded border border-line px-2 py-1 text-[11px]" />
+              <button className="rounded border border-line px-2 py-1 text-[11px]">Agregar a la unidad</button>
+            </form>
+          )}
         </div>
       )}
     </div>

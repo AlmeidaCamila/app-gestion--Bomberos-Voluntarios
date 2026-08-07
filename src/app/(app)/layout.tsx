@@ -84,6 +84,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   } else {
     items = [
       { href: "/", label: "Mis Tareas", icon: ICON.home },
+      { href: "/inventory", label: "Inventario", icon: ICON.inventory },
       { href: "/scores", label: "Mi Puntaje", icon: ICON.scores },
       { href: "/history", label: "Mi Historial", icon: ICON.history },
     ];
