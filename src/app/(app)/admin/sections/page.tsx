@@ -1,10 +1,11 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import { Plus, Edit2, Trash2, LayoutGrid } from "lucide-react";
+import { Plus, Trash2, LayoutGrid } from "lucide-react";
 import { asFormAction } from "@/lib/actionHelpers";
 import { EncargadoSelect } from "@/components/EncargadoSelect";
 import {
   createSectionAction,
   updateSectionIconAction,
+  updateSectionNameAction,
   deleteSectionAction,
   createSubsectionAction,
   deleteSubsectionAction,
@@ -78,16 +79,19 @@ export default async function AdminSectionsPage() {
                     ✓
                   </button>
                 </form>
-                <h3 className="font-display text-base font-bold uppercase">{s.name}</h3>
+                <form action={asFormAction(updateSectionNameAction, s.id)} className="flex items-center gap-1">
+                  <input
+                    name="name"
+                    defaultValue={s.name}
+                    required
+                    className="rounded border border-line px-2 py-1 font-display text-base font-bold uppercase outline-none focus:border-brand"
+                  />
+                  <button title="Guardar nombre" className="text-[11px] text-steel hover:text-brand">
+                    ✓
+                  </button>
+                </form>
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  disabled
-                  title="Próximamente: editar el nombre de la sección"
-                  className="flex items-center gap-1.5 font-display text-xs font-semibold uppercase text-steel opacity-40"
-                >
-                  <Edit2 className="h-3.5 w-3.5" /> Editar nombre
-                </button>
                 <form action={asFormAction(deleteSectionAction, s.id)}>
                   <button className="flex items-center text-brand transition-colors hover:text-brand/80">
                     <Trash2 className="h-4 w-4" />

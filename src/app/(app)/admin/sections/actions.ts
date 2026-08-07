@@ -7,7 +7,7 @@ export async function createSectionAction(formData: FormData) {
   const supabase = createServerSupabase();
   const name = String(formData.get("name") || "").trim();
   if (!name) return { error: "El nombre es obligatorio." };
-  const { error } = await supabase.from("sections").insert({ name, icon: "flame" } as any);
+  const { error } = await supabase.from("sections").insert({ name, icon: "🔥" } as any);
   if (error) return { error: error.message };
   revalidatePath("/admin/sections");
   return { error: null };
@@ -21,6 +21,18 @@ export async function updateSectionIconAction(sectionId: string, formData: FormD
   if (error) return { error: error.message };
   revalidatePath("/admin/sections");
   revalidatePath("/");
+  return { error: null };
+}
+
+export async function updateSectionNameAction(sectionId: string, formData: FormData) {
+  const supabase = createServerSupabase();
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return { error: "El nombre es obligatorio." };
+  const { error } = await supabase.from("sections").update({ name }).eq("id", sectionId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/sections");
+  revalidatePath("/");
+  revalidatePath("/tasks");
   return { error: null };
 }
 
