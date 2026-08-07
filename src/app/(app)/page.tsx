@@ -49,7 +49,7 @@ export default async function DashboardPage() {
   // encargados y bomberos: tareas asignadas o de su alcance
   const canManage = profile.role_code === "encargado_seccion" || profile.role_code === "encargado_subseccion";
 
-  const [{ data: tasks }, { data: bomberosRaw }] = await Promise.all([
+  const [{ data: tasks }, { data: bomberosRaw, error: bomberosError }] = await Promise.all([
     supabase
       .from("tasks")
       .select(
@@ -60,8 +60,10 @@ export default async function DashboardPage() {
       .limit(50),
     canManage
       ? supabase.from("profiles").select("id, full_name, legajo, subsection_id, roles(code)").eq("active", true)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as any[], error: null }),
   ]);
+
+  if (bomberosError) console.error("[dashboard] error al cargar bomberos:", bomberosError.message);
 
   const bomberos = (bomberosRaw || [])
     .filter((b: any) => b.roles?.code === "bombero")

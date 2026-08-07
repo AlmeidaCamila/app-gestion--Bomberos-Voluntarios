@@ -11,7 +11,7 @@ export default async function TasksPage() {
     { data: priorities },
     { data: frequencies },
     { data: tasksRaw },
-    { data: bomberos },
+    { data: bomberos, error: bomberosError },
     { data: units },
   ] = await Promise.all([
     supabase.from("sections").select("id, name"),
@@ -30,6 +30,8 @@ export default async function TasksPage() {
       .eq("active", true),
     supabase.from("units").select("id, name"),
   ]);
+
+  if (bomberosError) console.error("[tasks/page] error al cargar bomberos:", bomberosError.message);
 
   const bomberosList = (bomberos || [])
     .filter((b: any) => b.roles?.code === "bombero")
