@@ -28,9 +28,9 @@ export default function LoginPage() {
         <h1 className="font-display text-2xl uppercase tracking-wide text-charcoal">
           Tablón de Guardia
         </h1>
-        <p className="mb-6 font-mono text-xs text-steel">
-          Gestión de tareas — Cuartel de Bomberos
-        </p>
+        <p className="font-mono text-xs text-steel">gestión interna</p>
+        <p className="font-mono text-xs text-steel">Cuartel Nº142</p>
+        <p className="mb-6 font-mono text-xs text-steel">Sierra de los Padres</p>
 
         {state?.error && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-brand-dark">

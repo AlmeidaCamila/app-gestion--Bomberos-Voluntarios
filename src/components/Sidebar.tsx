@@ -65,6 +65,8 @@ export function Sidebar({
             <div>
               <h1 className="font-display text-base uppercase text-white">Tablón de Guardia</h1>
               <div className="font-mono text-[10px] text-steelLight">gestión interna</div>
+              <div className="font-mono text-[10px] text-steelLight">Cuartel Nº142</div>
+              <div className="font-mono text-[10px] text-steelLight">Sierra de los Padres</div>
             </div>
           </div>
         </div>
