@@ -63,7 +63,7 @@ export function Sidebar({
               🚒
             </div>
             <div>
-              <h1 className="font-display text-base uppercase text-white">Tablón de Guardia</h1>
+              <h1 className="font-display text-base uppercase text-white">Tareas de Guardia</h1>
               <div className="font-mono text-[10px] text-steelLight">Gestión de tareas internas</div>
               <div className="font-mono text-[10px] text-steelLight">Cuartel Nº142</div>
               <div className="font-mono text-[10px] text-steelLight">Sierra de los Padres</div>
