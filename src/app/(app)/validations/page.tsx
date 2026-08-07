@@ -5,10 +5,17 @@ export default async function ValidationsPage() {
   const supabase = createServerSupabase();
 
   // RLS limita esto a tareas de subsecciones que el usuario puede gestionar.
-  const { data: tasks } = await supabase
+  // El filtro sobre task_statuses.code necesita que esa relación esté
+  // embebida (con !inner) en el select — si no, PostgREST no tiene sobre
+  // qué aplicarlo y la consulta falla. Sin este !inner, esto quedaba
+  // desincronizado con el contador de "Validaciones" del sidebar (que sí
+  // lo usa), mostrando la lista vacía aunque el número indicara pendientes.
+  const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, name, priorities(name)")
+    .select("id, name, priorities(name), task_statuses!inner(code)")
     .eq("task_statuses.code", "pendiente_validacion");
+
+  if (tasksError) console.error("[validations/page] error al cargar tareas pendientes:", tasksError.message);
 
   // Traemos la última entrega (submission) pendiente por cada tarea.
   const taskIds = (tasks || []).map((t: any) => t.id);
