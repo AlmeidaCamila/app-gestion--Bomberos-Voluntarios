@@ -25,7 +25,7 @@ export default function LoginPage() {
         <div className="mb-7 text-center">
           <div className="mb-2 text-3xl">🧑‍🚒</div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-charcoal">
-            Tablón de Guardia
+            Tareas de Guardia
           </h1>
           <p className="mt-1 font-mono text-xs text-steel">Gestión de tareas internas</p>
           <p className="mt-3 font-mono text-xs leading-relaxed text-steel">
