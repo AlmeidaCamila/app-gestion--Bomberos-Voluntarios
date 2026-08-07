@@ -94,7 +94,7 @@ export function InventoryManager({
         {canManage && <NewUnitForm sections={sections} onCreated={() => showToast("Unidad creada.")} />}
       </div>
 
-      {canManage && <CatalogPanel items={items} onRun={run} pending={pending} />}
+      <CatalogPanel items={items} onRun={run} pending={pending} canManage={canManage} />
 
       {/* Acceso rápido a Pañol/Otros por sección */}
       {canManage && (
@@ -142,10 +142,12 @@ function CatalogPanel({
   items,
   onRun,
   pending,
+  canManage,
 }: {
   items: Item[];
   onRun: (p: Promise<{ error: string | null }>, msg: string) => void;
   pending: boolean;
+  canManage: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -169,14 +171,16 @@ function CatalogPanel({
       </button>
       {open && (
         <div className="border-t border-line p-4">
-          <form
-            action={(fd) => onRun(createInventoryItemAction(fd), "Elemento agregado al catálogo.")}
-            className="mb-3 flex flex-wrap gap-2"
-          >
-            <input name="name" placeholder="Nombre (ej: Manguera 45 mm)" required className="rounded border border-line px-2 py-1.5 text-xs" />
-            <input name="category" placeholder="Categoría (opcional)" className="rounded border border-line px-2 py-1.5 text-xs" />
-            <button className="rounded border border-line px-3 py-1.5 text-xs">Agregar</button>
-          </form>
+          {canManage && (
+            <form
+              action={(fd) => onRun(createInventoryItemAction(fd), "Elemento agregado al catálogo.")}
+              className="mb-3 flex flex-wrap gap-2"
+            >
+              <input name="name" placeholder="Nombre (ej: Manguera 45 mm)" required className="rounded border border-line px-2 py-1.5 text-xs" />
+              <input name="category" placeholder="Categoría (opcional)" className="rounded border border-line px-2 py-1.5 text-xs" />
+              <button className="rounded border border-line px-3 py-1.5 text-xs">Agregar</button>
+            </form>
+          )}
 
           <div className="relative mb-2">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-steel" />
@@ -201,13 +205,15 @@ function CatalogPanel({
                   {it.name}
                   {it.category && <span className="ml-1.5 text-steel">· {it.category}</span>}
                 </span>
-                <button
-                  disabled={pending}
-                  onClick={() => onRun(deleteInventoryItemAction(it.id), "Elemento eliminado del catálogo.")}
-                  className="text-steel hover:text-brand"
-                >
-                  ✕
-                </button>
+                {canManage && (
+                  <button
+                    disabled={pending}
+                    onClick={() => onRun(deleteInventoryItemAction(it.id), "Elemento eliminado del catálogo.")}
+                    className="text-steel hover:text-brand"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ))}
           </div>
