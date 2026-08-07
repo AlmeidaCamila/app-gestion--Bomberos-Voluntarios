@@ -5,13 +5,15 @@ import { useState, useTransition } from "react";
 export function EncargadoSelect({
   defaultValue,
   options,
-  onAssign,
+  targetId,
+  action,
   placeholder = "— Sin asignar —",
   className,
 }: {
   defaultValue: string;
   options: { id: string; full_name: string }[];
-  onAssign: (encargadoId: string) => Promise<unknown>;
+  targetId: string;
+  action: (targetId: string, encargadoId: string) => Promise<unknown>;
   placeholder?: string;
   className?: string;
 }) {
@@ -26,7 +28,7 @@ export function EncargadoSelect({
         const next = e.target.value;
         setValue(next);
         startTransition(async () => {
-          await onAssign(next);
+          await action(targetId, next);
         });
       }}
       className={className || "w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-charcoal outline-none focus:border-brand"}

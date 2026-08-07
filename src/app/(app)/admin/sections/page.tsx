@@ -13,11 +13,19 @@ import {
 
 export default async function AdminSectionsPage() {
   const supabase = createServerSupabase();
-  const [{ data: sections }, { data: subsections }, { data: profiles }] = await Promise.all([
+  const [
+    { data: sections, error: sectionsError },
+    { data: subsections, error: subsectionsError },
+    { data: profiles, error: profilesError },
+  ] = await Promise.all([
     supabase.from("sections").select("id, name, encargado_id"),
     supabase.from("subsections").select("id, name, section_id, encargado_id"),
     supabase.from("profiles").select("id, full_name, roles(code)").eq("active", true),
   ]);
+
+  if (sectionsError) console.error("[admin/sections] error al cargar secciones:", sectionsError.message);
+  if (subsectionsError) console.error("[admin/sections] error al cargar subsecciones:", subsectionsError.message);
+  if (profilesError) console.error("[admin/sections] error al cargar perfiles:", profilesError.message);
 
   // El Encargado de área asigna un "encargado_seccion"; la subsección asigna
   // un "encargado_subseccion". Antes el mismo listado (todos los perfiles
@@ -86,7 +94,8 @@ export default async function AdminSectionsPage() {
                 <EncargadoSelect
                   defaultValue={s.encargado_id || ""}
                   options={encargadosSeccion}
-                  onAssign={assignSectionEncargadoAction.bind(null, s.id)}
+                  targetId={s.id}
+                  action={assignSectionEncargadoAction}
                   className="w-full max-w-md rounded-md border border-line bg-white px-3 py-2 text-sm text-charcoal outline-none focus:border-brand"
                 />
                 {encargadosSeccion.length === 0 && (
@@ -136,7 +145,8 @@ export default async function AdminSectionsPage() {
                         <EncargadoSelect
                           defaultValue={sd.encargado_id || ""}
                           options={encargadosSubseccion}
-                          onAssign={assignSubsectionEncargadoAction.bind(null, sd.id)}
+                          targetId={sd.id}
+                          action={assignSubsectionEncargadoAction}
                           placeholder="Sin encargado"
                           className="w-full rounded border border-line bg-white px-2 py-1.5 text-xs text-charcoal outline-none"
                         />
