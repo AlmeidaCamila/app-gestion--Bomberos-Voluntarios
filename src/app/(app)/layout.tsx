@@ -100,7 +100,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           legajo={profile.legajo}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <main className="flex-1 px-4 py-4 md:px-6 md:py-5">{children}</main>
+          <main className="flex-1 px-4 pb-4 pt-16 md:px-6 md:py-5">{children}</main>
         </div>
       </div>
     </ToastProvider>

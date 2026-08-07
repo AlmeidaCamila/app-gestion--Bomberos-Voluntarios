@@ -106,41 +106,79 @@ export default async function HistoryPage({
           {hasFilters ? "No hay ejecuciones que coincidan con el filtro." : "Todavía no hay ejecuciones registradas."}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line bg-white">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b-2 border-line font-mono text-[10px] uppercase text-steel">
-                <th className="p-2 text-left">Tarea</th>
-                <th className="p-2 text-left">Bombero</th>
-                <th className="p-2 text-left">Enviada</th>
-                <th className="p-2 text-left">Estado</th>
-                <th className="p-2 text-left">Validado por</th>
-                <th className="p-2 text-left">Validado el</th>
-                <th className="p-2 text-left">Puntos</th>
-                <th className="p-2 text-left">Observaciones / Motivo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submissions.map((s: any) => {
-                const v = s.v;
-                return (
-                  <tr key={s.id} className="border-b border-line">
-                    <td className="p-2 font-semibold">{s.tasks?.name}</td>
-                    <td className="p-2">
-                      {s.profiles?.full_name} <span className="font-mono text-steel">({s.profiles?.legajo})</span>
-                    </td>
-                    <td className="p-2 font-mono">{new Date(s.submitted_at).toLocaleString("es-AR")}</td>
-                    <td className="p-2">{v ? (v.decision === "aprobada" ? "Aprobada" : "Rechazada") : "En revisión"}</td>
-                    <td className="p-2">{v?.profiles?.full_name || "—"}</td>
-                    <td className="p-2 font-mono">{v ? new Date(v.validated_at).toLocaleString("es-AR") : "—"}</td>
-                    <td className="p-2 font-mono">{v?.points_awarded ?? "—"}</td>
-                    <td className="p-2">{v?.decision === "rechazada" ? v.rejection_reason : s.observations || "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Tabla — desktop */}
+          <div className="hidden overflow-x-auto rounded-lg border border-line bg-white md:block">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b-2 border-line font-mono text-[10px] uppercase text-steel">
+                  <th className="p-2 text-left">Tarea</th>
+                  <th className="p-2 text-left">Bombero</th>
+                  <th className="p-2 text-left">Enviada</th>
+                  <th className="p-2 text-left">Estado</th>
+                  <th className="p-2 text-left">Validado por</th>
+                  <th className="p-2 text-left">Validado el</th>
+                  <th className="p-2 text-left">Puntos</th>
+                  <th className="p-2 text-left">Observaciones / Motivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {submissions.map((s: any) => {
+                  const v = s.v;
+                  return (
+                    <tr key={s.id} className="border-b border-line">
+                      <td className="p-2 font-semibold">{s.tasks?.name}</td>
+                      <td className="p-2">
+                        {s.profiles?.full_name} <span className="font-mono text-steel">({s.profiles?.legajo})</span>
+                      </td>
+                      <td className="p-2 font-mono">{new Date(s.submitted_at).toLocaleString("es-AR")}</td>
+                      <td className="p-2">{v ? (v.decision === "aprobada" ? "Aprobada" : "Rechazada") : "En revisión"}</td>
+                      <td className="p-2">{v?.profiles?.full_name || "—"}</td>
+                      <td className="p-2 font-mono">{v ? new Date(v.validated_at).toLocaleString("es-AR") : "—"}</td>
+                      <td className="p-2 font-mono">{v?.points_awarded ?? "—"}</td>
+                      <td className="p-2">{v?.decision === "rechazada" ? v.rejection_reason : s.observations || "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Tarjetas — mobile: sin tabla ancha, todo apilado y visible sin scrollear al costado */}
+          <div className="space-y-2.5 md:hidden">
+            {submissions.map((s: any) => {
+              const v = s.v;
+              const estado = v ? (v.decision === "aprobada" ? "Aprobada" : "Rechazada") : "En revisión";
+              return (
+                <div key={s.id} className="rounded-lg border border-line bg-white p-3.5">
+                  <div className="mb-1.5 flex items-start justify-between gap-2">
+                    <h4 className="text-sm font-bold text-charcoal">{s.tasks?.name}</h4>
+                    <span className="whitespace-nowrap rounded bg-paper2 px-2 py-0.5 font-mono text-[10px] uppercase text-steel">
+                      {estado}
+                    </span>
+                  </div>
+                  <div className="space-y-1 font-mono text-[11px] text-steel">
+                    <div>
+                      Bombero: <span className="text-charcoal">{s.profiles?.full_name} ({s.profiles?.legajo})</span>
+                    </div>
+                    <div>Enviada: <span className="text-charcoal">{new Date(s.submitted_at).toLocaleString("es-AR")}</span></div>
+                    <div>
+                      Validado por: <span className="text-charcoal">{v?.profiles?.full_name || "—"}</span>
+                    </div>
+                    <div>
+                      Validado el: <span className="text-charcoal">{v ? new Date(v.validated_at).toLocaleString("es-AR") : "—"}</span>
+                    </div>
+                    <div>Puntos: <span className="text-charcoal">{v?.points_awarded ?? "—"}</span></div>
+                    <div>
+                      {v?.decision === "rechazada" ? "Motivo" : "Observaciones"}:{" "}
+                      <span className="text-charcoal">{v?.decision === "rechazada" ? v.rejection_reason : s.observations || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

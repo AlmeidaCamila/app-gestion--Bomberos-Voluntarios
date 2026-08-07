@@ -86,7 +86,7 @@ export default async function AdminSectionsPage() {
                 <EncargadoSelect
                   defaultValue={s.encargado_id || ""}
                   options={encargadosSeccion}
-                  onAssign={(encargadoId) => assignSectionEncargadoAction(s.id, encargadoId)}
+                  onAssign={assignSectionEncargadoAction.bind(null, s.id)}
                   className="w-full max-w-md rounded-md border border-line bg-white px-3 py-2 text-sm text-charcoal outline-none focus:border-brand"
                 />
                 {encargadosSeccion.length === 0 && (
@@ -136,7 +136,7 @@ export default async function AdminSectionsPage() {
                         <EncargadoSelect
                           defaultValue={sd.encargado_id || ""}
                           options={encargadosSubseccion}
-                          onAssign={(encargadoId) => assignSubsectionEncargadoAction(sd.id, encargadoId)}
+                          onAssign={assignSubsectionEncargadoAction.bind(null, sd.id)}
                           placeholder="Sin encargado"
                           className="w-full rounded border border-line bg-white px-2 py-1.5 text-xs text-charcoal outline-none"
                         />
