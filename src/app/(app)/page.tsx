@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { WeekBanner } from "@/components/WeekBanner";
 import { CompleteTaskButton } from "@/components/CompleteTaskButton";
+import { AssignControl } from "@/components/AssignControl";
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile();
@@ -46,14 +47,25 @@ export default async function DashboardPage() {
   }
 
   // encargados y bomberos: tareas asignadas o de su alcance
-  const { data: tasks } = await supabase
-    .from("tasks")
-    .select(
-      "id, name, description, priority_id, status_id, due_date, assigned_bombero_id, unit_id, requires_inventory_review, priorities(name,code), task_statuses(name,code), units(name)"
-    )
-    .eq("active", true)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const canManage = profile.role_code === "encargado_seccion" || profile.role_code === "encargado_subseccion";
+
+  const [{ data: tasks }, { data: bomberosRaw }] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select(
+        "id, name, description, priority_id, status_id, due_date, assigned_bombero_id, subsection_id, unit_id, requires_inventory_review, priorities(name,code), task_statuses(name,code), units(name)"
+      )
+      .eq("active", true)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    canManage
+      ? supabase.from("profiles").select("id, full_name, legajo, subsection_id, roles(code)").eq("active", true)
+      : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  const bomberos = (bomberosRaw || [])
+    .filter((b: any) => b.roles?.code === "bombero")
+    .map((b: any) => ({ id: b.id, full_name: b.full_name, legajo: b.legajo, subsection_id: b.subsection_id }));
 
   const mine =
     profile.role_code === "bombero"
@@ -67,14 +79,24 @@ export default async function DashboardPage() {
     <div>
       <WeekBanner />
       <h3 className="mb-2 font-display text-sm uppercase">Pendientes ({pending.length})</h3>
-      <TaskList tasks={pending} isBombero={profile.role_code === "bombero"} />
+      <TaskList tasks={pending} isBombero={profile.role_code === "bombero"} canManage={canManage} bomberos={bomberos} />
       <h3 className="mb-2 mt-6 font-display text-sm uppercase">En revisión ({review.length})</h3>
-      <TaskList tasks={review} isBombero={profile.role_code === "bombero"} />
+      <TaskList tasks={review} isBombero={profile.role_code === "bombero"} canManage={canManage} bomberos={bomberos} />
     </div>
   );
 }
 
-function TaskList({ tasks, isBombero }: { tasks: any[]; isBombero: boolean }) {
+function TaskList({
+  tasks,
+  isBombero,
+  canManage,
+  bomberos,
+}: {
+  tasks: any[];
+  isBombero: boolean;
+  canManage: boolean;
+  bomberos: { id: string; full_name: string; legajo: string; subsection_id: string | null }[];
+}) {
   if (!tasks.length)
     return <div className="rounded-lg border border-line bg-white p-6 text-center text-sm text-steel">Sin tareas.</div>;
   return (
@@ -98,6 +120,20 @@ function TaskList({ tasks, isBombero }: { tasks: any[]; isBombero: boolean }) {
               </span>
             )}
           </div>
+          {canManage && (
+            <div className="mt-2.5 border-t border-line pt-2.5">
+              <AssignControl
+                taskId={t.id}
+                currentBomberoId={t.assigned_bombero_id}
+                currentBomberoName={bomberos.find((b) => b.id === t.assigned_bombero_id)?.full_name || null}
+                bomberos={bomberos.filter((b) => b.subsection_id === t.subsection_id)}
+                compact
+              />
+              <Link href="/tasks" className="mt-1.5 block font-mono text-[10px] uppercase text-brand underline">
+                Editar tarea
+              </Link>
+            </div>
+          )}
           {isBombero && t.task_statuses?.code !== "pendiente_validacion" && (
             <div className="mt-2">
               {t.unit_id && t.requires_inventory_review ? (

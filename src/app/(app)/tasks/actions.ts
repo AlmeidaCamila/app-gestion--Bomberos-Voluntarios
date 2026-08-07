@@ -69,10 +69,13 @@ export async function updateTaskAction(taskId: string, formData: FormData) {
   const frequency_days = type === "ciclica" ? Number(formData.get("frequency_days")) : null;
   const unit_id = String(formData.get("unit_id") || "") || null;
   const requires_inventory_review = unit_id ? formData.get("requires_inventory_review") === "on" : false;
+  const assigned_bombero_id = String(formData.get("assigned_bombero_id") || "") || null;
 
   if (!name || !subsection_id || !priority_id) {
     return { error: "Completá nombre, subsección y prioridad." };
   }
+
+  const { data: current } = await supabase.from("tasks").select("assigned_bombero_id").eq("id", taskId).single();
 
   const { error } = await supabase
     .from("tasks")
@@ -90,6 +93,17 @@ export async function updateTaskAction(taskId: string, formData: FormData) {
     .eq("id", taskId);
 
   if (error) return { error: error.message };
+
+  // Asignación / reasignación opcional en el mismo paso de edición (vía
+  // assign_task, para que quede auditada igual que cualquier otra asignación).
+  if (assigned_bombero_id && assigned_bombero_id !== current?.assigned_bombero_id) {
+    const { error: assignError } = await supabase.rpc("assign_task", {
+      p_task_id: taskId,
+      p_bombero_id: assigned_bombero_id,
+    });
+    if (assignError) return { error: `Tarea actualizada, pero falló la asignación: ${assignError.message}` };
+  }
+
   revalidatePath("/tasks");
   revalidatePath("/");
   return { error: null };

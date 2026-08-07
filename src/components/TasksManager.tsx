@@ -471,18 +471,21 @@ function TaskForm({
           </select>
         </Field>
       )}
-      {mode === "create" && (
-        <Field label="Responsable (opcional)">
-          <select name="assigned_bombero_id" defaultValue="" className="input" disabled={!subsectionId}>
-            <option value="">Sin asignar por ahora</option>
-            {filteredBomberos.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.full_name} ({b.legajo})
-              </option>
-            ))}
-          </select>
-        </Field>
-      )}
+      <Field label="Responsable (opcional)">
+        <select
+          name="assigned_bombero_id"
+          defaultValue={task?.assigned_bombero_id || ""}
+          className="input"
+          disabled={!subsectionId}
+        >
+          <option value="">{mode === "create" ? "Sin asignar por ahora" : "Sin cambios"}</option>
+          {filteredBomberos.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.full_name} ({b.legajo})
+            </option>
+          ))}
+        </select>
+      </Field>
 
       {error && <div className="rounded bg-red-50 px-3 py-2 text-xs text-brand-dark">{error}</div>}
 
