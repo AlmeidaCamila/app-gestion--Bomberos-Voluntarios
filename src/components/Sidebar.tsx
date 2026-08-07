@@ -59,8 +59,8 @@ export function Sidebar({
       >
         <div className="border-b border-white/10 px-5 py-5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand text-base text-white">
-              🧑‍🚒
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-charcoal2 text-base">
+              🚒
             </div>
             <div>
               <h1 className="font-display text-base uppercase text-white">Tablón de Guardia</h1>
