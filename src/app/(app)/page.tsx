@@ -124,13 +124,19 @@ function TaskList({
           </div>
           {canManage && (
             <div className="mt-2.5 border-t border-line pt-2.5">
-              <AssignControl
-                taskId={t.id}
-                currentBomberoId={t.assigned_bombero_id}
-                currentBomberoName={bomberos.find((b) => b.id === t.assigned_bombero_id)?.full_name || null}
-                bomberos={bomberos.filter((b) => b.subsection_id === t.subsection_id)}
-                compact
-              />
+              {t.task_statuses?.code === "pendiente_validacion" ? (
+                <p className="text-[11px] text-steel">
+                  En revisión — no se puede reasignar hasta que se apruebe o rechace.
+                </p>
+              ) : (
+                <AssignControl
+                  taskId={t.id}
+                  currentBomberoId={t.assigned_bombero_id}
+                  currentBomberoName={bomberos.find((b) => b.id === t.assigned_bombero_id)?.full_name || null}
+                  bomberos={bomberos.filter((b) => b.subsection_id === t.subsection_id)}
+                  compact
+                />
+              )}
               <Link href="/tasks" className="mt-1.5 block font-mono text-[10px] uppercase text-brand underline">
                 Editar tarea
               </Link>

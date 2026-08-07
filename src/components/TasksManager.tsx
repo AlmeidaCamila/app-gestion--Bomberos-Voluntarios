@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Plus, Pencil, Eye, Trash2, X, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Eye, Trash2, X, CheckCircle2, UserRound } from "lucide-react";
 import { Drawer } from "@/components/Drawer";
 import { AssignControl } from "@/components/AssignControl";
 import { useToast } from "@/components/Toast";
@@ -136,13 +136,20 @@ export function TasksManager({
                   {t.subsections?.sections?.name} <span className="text-steelLight">/</span> {t.subsections?.name}
                 </td>
                 <td className="px-3 py-2">
-                  <AssignControl
-                    taskId={t.id}
-                    currentBomberoId={t.assigned_bombero_id}
-                    currentBomberoName={bomberoName(t.assigned_bombero_id)}
-                    bomberos={bomberos.filter((b) => b.subsection_id === t.subsection_id)}
-                    compact
-                  />
+                  {t.task_statuses?.code === "pendiente_validacion" ? (
+                    <span className="flex items-center gap-1.5 text-xs text-charcoal" title="En revisión — no se puede reasignar hasta que se apruebe o rechace.">
+                      <UserRound className="h-3.5 w-3.5 text-steel" />
+                      {bomberoName(t.assigned_bombero_id) || <span className="text-steel">Sin asignar</span>}
+                    </span>
+                  ) : (
+                    <AssignControl
+                      taskId={t.id}
+                      currentBomberoId={t.assigned_bombero_id}
+                      currentBomberoName={bomberoName(t.assigned_bombero_id)}
+                      bomberos={bomberos.filter((b) => b.subsection_id === t.subsection_id)}
+                      compact
+                    />
+                  )}
                 </td>
                 <td className="px-3 py-2">
                   <span className="flex items-center gap-1.5">
@@ -471,21 +478,29 @@ function TaskForm({
           </select>
         </Field>
       )}
-      <Field label="Responsable (opcional)">
-        <select
-          name="assigned_bombero_id"
-          defaultValue={task?.assigned_bombero_id || ""}
-          className="input"
-          disabled={!subsectionId}
-        >
-          <option value="">{mode === "create" ? "Sin asignar por ahora" : "Sin cambios"}</option>
-          {filteredBomberos.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.full_name} ({b.legajo})
-            </option>
-          ))}
-        </select>
-      </Field>
+      {task?.task_statuses?.code === "pendiente_validacion" ? (
+        <Field label="Responsable">
+          <p className="rounded border border-line bg-paper2 px-2.5 py-1.5 text-xs text-steel">
+            La tarea está en revisión — no se puede reasignar hasta que se apruebe o rechace la entrega.
+          </p>
+        </Field>
+      ) : (
+        <Field label="Responsable (opcional)">
+          <select
+            name="assigned_bombero_id"
+            defaultValue={task?.assigned_bombero_id || ""}
+            className="input"
+            disabled={!subsectionId}
+          >
+            <option value="">{mode === "create" ? "Sin asignar por ahora" : "Sin cambios"}</option>
+            {filteredBomberos.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.full_name} ({b.legajo})
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
 
       {error && <div className="rounded bg-red-50 px-3 py-2 text-xs text-brand-dark">{error}</div>}
 
