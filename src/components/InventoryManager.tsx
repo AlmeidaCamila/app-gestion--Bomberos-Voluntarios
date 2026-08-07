@@ -19,13 +19,13 @@ interface InvRow { id: string; unit_id: string; item_id: string; quantity: numbe
 interface SectionLite { id: string; name: string; }
 
 export function InventoryManager({
-  isAdmin,
+  canManageCatalog,
   units,
   items,
   unitInventory,
   sections,
 }: {
-  isAdmin: boolean;
+  canManageCatalog: boolean;
   units: UnitRow[];
   items: Item[];
   unitInventory: InvRow[];
@@ -67,7 +67,7 @@ export function InventoryManager({
 
   return (
     <div className="space-y-5">
-      {isAdmin && <CatalogPanel items={items} onRun={run} pending={pending} />}
+      {canManageCatalog && <CatalogPanel items={items} onRun={run} pending={pending} />}
 
       {/* Barra de filtros */}
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">

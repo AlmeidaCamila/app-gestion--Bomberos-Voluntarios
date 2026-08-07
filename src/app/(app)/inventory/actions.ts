@@ -12,11 +12,15 @@ import { PANOL_UNIT_NAME } from "@/lib/constants";
  * ("crash al crear unidades" que reportaron).
  */
 
-// ---------- Catálogo de elementos (solo Administrador, es global) ----------
+// ---------- Catálogo de elementos (Administrador, Encargado de Área y Subencargado; es global) ----------
+const CATALOG_MANAGER_ROLES = ["admin", "encargado_seccion", "encargado_subseccion"];
+
 export async function createInventoryItemAction(formData: FormData) {
   try {
     const profile = await getCurrentProfile();
-    if (profile?.role_code !== "admin") return { error: "Solo un administrador puede editar el catálogo." };
+    if (!profile || !CATALOG_MANAGER_ROLES.includes(profile.role_code)) {
+      return { error: "No tenés permiso para editar el catálogo." };
+    }
     const supabase = createServerSupabase();
     const name = String(formData.get("name") || "").trim();
     const category = String(formData.get("category") || "").trim();
@@ -33,7 +37,9 @@ export async function createInventoryItemAction(formData: FormData) {
 export async function deleteInventoryItemAction(id: string) {
   try {
     const profile = await getCurrentProfile();
-    if (profile?.role_code !== "admin") return { error: "Solo un administrador puede editar el catálogo." };
+    if (!profile || !CATALOG_MANAGER_ROLES.includes(profile.role_code)) {
+      return { error: "No tenés permiso para editar el catálogo." };
+    }
     const supabase = createServerSupabase();
     const { error } = await supabase.from("inventory_items").delete().eq("id", id);
     if (error) return { error: error.message };

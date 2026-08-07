@@ -18,7 +18,7 @@ export default async function InventoryPage() {
     <div>
       <h2 className="mb-3 font-display text-base font-bold uppercase tracking-wide text-charcoal">Inventario</h2>
       <InventoryManager
-        isAdmin={profile.role_code === "admin"}
+        canManageCatalog={["admin", "encargado_seccion", "encargado_subseccion"].includes(profile.role_code)}
         units={units || []}
         items={items || []}
         unitInventory={unitInventory || []}
