@@ -34,7 +34,10 @@ export default async function DashboardPage() {
                 href={`/tasks?section=${s.id}`}
                 className="rounded-lg bg-charcoal p-5 text-white transition hover:-translate-y-0.5"
               >
-                <div className="font-display text-lg uppercase">{s.name}</div>
+                <div className="font-display text-lg uppercase">
+                  <span className="mr-1.5">{s.icon || "🔥"}</span>
+                  {s.name}
+                </div>
                 <div className="mt-1 font-mono text-[10.5px] text-steelLight">
                   {subCount} subsección{subCount !== 1 ? "es" : ""}
                 </div>

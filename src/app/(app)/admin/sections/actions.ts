@@ -13,6 +13,17 @@ export async function createSectionAction(formData: FormData) {
   return { error: null };
 }
 
+export async function updateSectionIconAction(sectionId: string, formData: FormData) {
+  const supabase = createServerSupabase();
+  const icon = String(formData.get("icon") || "").trim();
+  if (!icon) return { error: "Elegí un emoji para la sección." };
+  const { error } = await supabase.from("sections").update({ icon }).eq("id", sectionId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/sections");
+  revalidatePath("/");
+  return { error: null };
+}
+
 export async function deleteSectionAction(id: string) {
   const supabase = createServerSupabase();
   const { error } = await supabase.from("sections").delete().eq("id", id);

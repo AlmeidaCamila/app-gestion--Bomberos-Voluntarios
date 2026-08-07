@@ -1,9 +1,10 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import { Plus, Edit2, Trash2, LayoutGrid, Box } from "lucide-react";
+import { Plus, Edit2, Trash2, LayoutGrid } from "lucide-react";
 import { asFormAction } from "@/lib/actionHelpers";
 import { EncargadoSelect } from "@/components/EncargadoSelect";
 import {
   createSectionAction,
+  updateSectionIconAction,
   deleteSectionAction,
   createSubsectionAction,
   deleteSubsectionAction,
@@ -18,7 +19,7 @@ export default async function AdminSectionsPage() {
     { data: subsections, error: subsectionsError },
     { data: profiles, error: profilesError },
   ] = await Promise.all([
-    supabase.from("sections").select("id, name, encargado_id"),
+    supabase.from("sections").select("id, name, icon, encargado_id"),
     supabase.from("subsections").select("id, name, section_id, encargado_id"),
     supabase.from("profiles").select("id, full_name, roles(code)").eq("active", true),
   ]);
@@ -65,16 +66,27 @@ export default async function AdminSectionsPage() {
             {/* Cabecera de la Tarjeta */}
             <div className="flex items-center justify-between border-b border-line px-6 py-4">
               <div className="flex items-center gap-3 text-charcoal">
-                <Box className="h-5 w-5" />
+                <form action={asFormAction(updateSectionIconAction, s.id)} className="flex items-center gap-1">
+                  <input
+                    name="icon"
+                    defaultValue={s.icon || "🔥"}
+                    maxLength={4}
+                    title="Emoji de la sección"
+                    className="w-9 rounded border border-line text-center text-lg outline-none focus:border-brand"
+                  />
+                  <button title="Guardar emoji" className="text-[11px] text-steel hover:text-brand">
+                    ✓
+                  </button>
+                </form>
                 <h3 className="font-display text-base font-bold uppercase">{s.name}</h3>
               </div>
               <div className="flex items-center gap-4">
                 <button
                   disabled
-                  title="Próximamente: editar nombre/ícono de la sección"
+                  title="Próximamente: editar el nombre de la sección"
                   className="flex items-center gap-1.5 font-display text-xs font-semibold uppercase text-steel opacity-40"
                 >
-                  <Edit2 className="h-3.5 w-3.5" /> Editar
+                  <Edit2 className="h-3.5 w-3.5" /> Editar nombre
                 </button>
                 <form action={asFormAction(deleteSectionAction, s.id)}>
                   <button className="flex items-center text-brand transition-colors hover:text-brand/80">
