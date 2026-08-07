@@ -1,21 +1,22 @@
 /**
  * Adaptador para usar una Server Action que devuelve datos (ej: {error})
- * directamente en el atributo `action` de un <form> nativo.
+ * directamente en el atributo `action` de un <form> nativo, incluso con
+ * argumentos adicionales "pegados" (ej: el id de la fila).
  *
- * React tipa `form.action` como `(formData: FormData) => void | Promise<void>`.
- * Nuestras Server Actions devuelven `{error: string | null}` para poder
- * mostrar mensajes de error — eso es útil con `useFormState`, pero rompe el
- * tipado cuando se las pasa "peladas" a un form sin capturar el resultado
- * (como en los toggles/eliminar rápidos de las tablas admin).
+ * Importante: usa `.bind()`, no una función nueva armada acá adentro
+ * (`async (formData) => { await action(...) }`). Next.js solo reconoce una
+ * Server Action al cruzar de Server a Client Component si la referencia
+ * original se preserva — con `.bind()` se preserva, con una closure nueva
+ * no, y eso tiraba "Functions cannot be passed directly to Client
+ * Components" en producción (silencioso en dev, pero rompía el build
+ * serverless igual).
  *
- * `asFormAction` no cambia ningún comportamiento: solo tipa correctamente el
- * descarte intencional del valor de retorno para esos casos.
+ * React tipa `form.action` como `(formData: FormData) => void | Promise<void>`;
+ * nuestras Server Actions devuelven `{error: string | null}`, de ahí el cast.
  */
 export function asFormAction(
   action: (...args: any[]) => Promise<unknown>,
   ...boundArgs: any[]
 ): (formData: FormData) => Promise<void> {
-  return async (formData: FormData) => {
-    await action(...boundArgs, formData);
-  };
+  return (action as (...args: any[]) => Promise<void>).bind(null, ...boundArgs);
 }
